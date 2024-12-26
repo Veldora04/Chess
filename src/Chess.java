@@ -14,10 +14,10 @@ public class Chess {
     private final static String White_King = " ♚";
     private final static String White_Pawn = " ♟";
     private final static String Empty = " □";
+    private final static char EMPTY = 'x';
     private final static String First_Line = "  a  b c  d  e  f g  h";
     private String[][] board = new String[8][9];
 //    private ArrayList<String>[] notation = new ArrayList[2]; später machen
-    private boolean whiteToMove = true;
 
     public Chess() {
         assemble(board);
@@ -59,5 +59,6 @@ public class Chess {
 
     public static void main(String[] args) {
         Chess c = new Chess();
+        print(c.board);
     }
 }
