@@ -1,7 +1,11 @@
+import java.util.ArrayList;
+
 public class Chess {
+    private final static boolean Black_Color = false;
+    private final static boolean White_Color = true;
     private final static String White_To_Move = "White to move: ";
     private final static String Black_To_Move = "Black to move: ";
-    private final static String Black_Rook = " ♖";
+    private final static String Black_Rook = " ♖";      //Later for visualisation
     private final static String Black_Knight = " ♘";
     private final static String Black_Bishop = " ♗";
     private final static String Black_Queen = " ♕";
@@ -15,50 +19,113 @@ public class Chess {
     private final static String White_Pawn = " ♟";
     private final static String Empty = " □";
     private final static char EMPTY = 'x';
-    private final static String First_Line = "  a  b c  d  e  f g  h";
-    private String[][] board = new String[8][9];
-//    private ArrayList<String>[] notation = new ArrayList[2]; später machen
+    private Piece[][] board = new Piece[8][8];
+    private ArrayList<Piece> currentPieces = new ArrayList<>();
+    private int zug;
+//    private ArrayList<String>[] notation = new ArrayList[2]; do later
 
     public Chess() {
+        zug = 1;
         assemble(board);
     }
-
-    public static void assemble(String[][] b){
-        System.out.println(First_Line);
-        for (int i = 0; i < b.length; i++){
-            b[i][0] = String.valueOf(i);
+    private static void assemble(Piece[][] b){ //Starting board
+        for (int i = 0; i < b.length;i++){
+            ///black pawns
+            b[1][i] = new Pawn(false,1,i);
+            ///white pawns
+            b[6][i] = new Pawn(true,6,i);
         }
-        for (int i = 1; i < b[0].length; i++){
-            b[1][i] = Black_Pawn;
-            b[6][i] = White_Pawn;
-        }
-        for (int i = 2; i < b.length - 2;i++){
-            for (int j = 1; j < b[0].length; j++){
-                b[i][j] = Empty;
+        ///black pieces
+        b[0][0] = new Rook(Black_Color,0,0);
+        b[0][7] = new Rook(Black_Color,0,7);
+        b[0][1] = new Knight(Black_Color,0,1);
+        b[0][6] = new Knight(Black_Color,0,6);
+        b[0][2] = new Bishop(Black_Color,0,2);
+        b[0][5] = new Bishop(Black_Color,0,5);
+        b[0][3] = new Queen(Black_Color,0,3);
+        b[0][4] = new King(Black_Color,0,4);
+        ///white pieces
+        b[7][0] = new Rook(White_Color,7,0);
+        b[7][7] = new Rook(White_Color,7,7);
+        b[7][1] = new Knight(White_Color,7,1);
+        b[7][6] = new Knight(White_Color,7,6);
+        b[7][2] = new Bishop(White_Color,7,2);
+        b[7][5] = new Bishop(White_Color,7,5);
+        b[7][3] = new Queen(White_Color,7,3);
+        b[7][4] = new King(White_Color,7,4);
+    }
+    public void play(){
+        while(!isGameOver())
+            System.out.println((zug%2!=0 ? White_To_Move : Black_To_Move));
+    }
+    public boolean isGameOver(){
+        return false;
+    }
+    public boolean canKingMove(){
+        return false;
+    }
+    public boolean isKingInCheck(boolean KingColor){
+        int x = 0;
+        int y = 0;
+        for (Piece[] pieces : board){
+            for (Piece piece : pieces){
+                if (piece instanceof King && piece.color == KingColor){
+                    x = piece.xCoordinate;
+                    y = piece.yCoordinate;
+                }
             }
         }
-        b[0][1] = b[0][8] = Black_Rook;
-        b[0][2] = b[0][7] = Black_Knight;
-        b[0][3] = b[0][6] = Black_Bishop;
-        b[0][4] = Black_Queen;
-        b[0][5] = Black_King;
-        b[7][1] = b[7][8] = White_Rook;
-        b[7][2] = b[7][7] = White_Knight;
-        b[7][3] = b[7][6] = White_Bishop;
-        b[7][4] = White_Queen;
-        b[7][5] = White_King;
+        return isSquareInDanger(KingColor,x,y);
     }
-    public static void print(String[][] b){
-        for (String[] strings : b) {
-            for (int j = 0; j < b[0].length; j++) {
-                System.out.print(strings[j]);
+    public boolean isSquareInDanger(boolean color,int x,int y){
+        int res = 0;
+        for (Piece p : currentPieces){
+            if (p.checkIfValidMovetoTake(x,y)){
+                if (p instanceof Rook || p instanceof Queen){
+                    res += checkRows(x,y,p);
+                }
+                if (p instanceof Bishop || p instanceof Queen){
+                    res += checkDiagonals(x,y,p);
+                }
+                if (p instanceof Pawn || p instanceof Knight) return true; ///if is valid move to take it is there always possible
             }
-            System.out.println();
         }
+        return res != 0;
     }
+    private int checkRows(int x,int y,Piece piece){
+        for (Piece p : currentPieces){
+            if (x == piece.xCoordinate && x == p.xCoordinate && numberIsBetweenNumbers(p.yCoordinate,y,piece.yCoordinate)) return 1;
+            if (y == piece.yCoordinate && y == p.yCoordinate && numberIsBetweenNumbers(p.xCoordinate,x,piece.xCoordinate)) return 1;
+        }
+        return 0;
+    }
+    private int checkDiagonals(int x,int y,Piece piece){
+        int dx = piece.xCoordinate > x ? 1 : -1; //Direction along x
+        int dy = piece.yCoordinate > y ? 1 : -1; //Direction along y
 
-    public static void main(String[] args) {
-        Chess c = new Chess();
-        print(c.board);
+        int currentX = x + dx; //Start checking from next diagonal square
+        int currentY = y + dy;
+
+        while (currentX != piece.xCoordinate && currentY != piece.yCoordinate) {
+            for (Piece p : currentPieces) {
+                if (p.xCoordinate == currentX && p.yCoordinate == currentY) {
+                    return 0; //Blocked
+                }
+            }
+            currentX += dx;
+            currentY += dy;
+        }
+        return 1; //Threat
+    }
+    private boolean numberIsBetweenNumbers(int toCheck,int from,int to){
+        return Math.min(from,to) < toCheck && Math.max(from,to) > toCheck;
+    }
+    private void updatePiecesList(){ //update everytime turn is over
+        currentPieces.clear();
+        for (Piece[] p : board){
+            for (Piece p1 : p){
+                if (p1 != null) currentPieces.add(p1);
+            }
+        }
     }
 }

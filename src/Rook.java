@@ -6,8 +6,8 @@ public class Rook extends Piece{
     }
 
     @Override
-    public boolean checkIfValidMove(int xFrom, int yFrom, int xTo, int yTo) {
-        if (validCoordinates(xFrom,yFrom,xTo,yTo)) return xFrom == xTo || yFrom == yTo;
+    public boolean checkIfValidMovetoTake(int xTo, int yTo) {
+        if (validCoordinates(xCoordinate,yCoordinate,xTo,yTo)) return xCoordinate == xTo || yCoordinate == yTo;
         return false;
     }
 
@@ -18,4 +18,5 @@ public class Rook extends Piece{
     public void setMoved(boolean moved) {
         this.moved = moved;
     }
+
 }

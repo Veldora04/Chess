@@ -1,12 +1,13 @@
 public class Bishop extends Piece{
 
-    protected Bishop(boolean color, char name, int xC, int yC) {
-        super(color, name, xC, yC);
+    protected Bishop(boolean color, int xC, int yC) {
+        super(color, 'B', xC, yC);
     }
 
     @Override
-    public boolean checkIfValidMove(int xFrom, int yFrom, int xTo, int yTo) {
-        if (validCoordinates(xFrom,yFrom,xTo,yTo)) return Math.abs((yFrom - yTo)/(xFrom - xTo)) == 1;
+    public boolean checkIfValidMovetoTake(int xTo, int yTo) {
+        if (validCoordinates(xCoordinate,yCoordinate,xTo,yTo)) return Math.abs((yCoordinate - yTo)/(xCoordinate - xTo)) == 1;
         return false;
     }
+
 }

@@ -2,12 +2,13 @@ public class Knight extends Piece{
 
     public Knight(boolean color,int x,int y){
         super(color,'N',x,y);
+
     }
     @Override
-    public boolean checkIfValidMove(int xFrom, int yFrom, int xTo, int yTo) {
-        if (validCoordinates(xFrom,yFrom,xTo,yTo)){
-            int temp = Math.abs(xTo - xFrom);
-            int temp1 = Math.abs(yTo - yFrom);
+    public boolean checkIfValidMovetoTake(int xTo, int yTo) {
+        if (validCoordinates(xCoordinate,yCoordinate,xTo,yTo)){
+            int temp = Math.abs(xTo - xCoordinate);
+            int temp1 = Math.abs(yTo - yCoordinate);
             if (temp < 3 && temp > 0){
                 switch (temp){
                     case 1: return temp1 == 2;
@@ -17,4 +18,6 @@ public class Knight extends Piece{
         }
         return false;
     }
+
+
 }

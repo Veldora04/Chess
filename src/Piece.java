@@ -10,7 +10,7 @@ public abstract class Piece {
         xCoordinate = xC;
         yCoordinate = yC;
     }
-    public abstract boolean checkIfValidMove(int xFrom,int yFrom,int xTo,int yTo);
+    public abstract boolean checkIfValidMovetoTake(int xTo,int yTo);
     public boolean validCoordinates(int xFrom,int yFrom,int xTo,int yTo){
         return isbetween0And7(xFrom,yFrom) && isbetween0And7(xTo,yTo);
     }
