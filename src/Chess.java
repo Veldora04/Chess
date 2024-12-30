@@ -76,13 +76,13 @@ public class Chess {
         for (Piece[] pieces : board){
             System.out.print(i);
             for (Piece piece : pieces){
-                if (piece != null) System.out.print(" " + piece.name);
-                else System.out.print(" " + EMPTY);
+                if (piece != null) System.out.print("   " + piece.name);
+                else System.out.print("   " + EMPTY);
             }
             System.out.println();
             i--;
         }
-        System.out.println("  a b c d e f g h");
+        System.out.println("    a   b   c   d   e   f   g   h");
     }
     public void move(boolean color){
         System.out.println("Please type in your Move: " + "            (e.g. e2e4 to move piece form e2 to e4, to castle enter castlelong or castleshort)");
@@ -157,13 +157,13 @@ public class Chess {
             move(color);
             return;
         }
-        if (board[firstX][firstY] ==  null || board[firstX][firstY].color != color){
+        if ((board[firstX][firstY] ==  null || board[firstX][firstY].color != color) || (board[secondX][secondY] != null && board[secondX][secondY].color == color)){
             System.out.println("Not your piece or no piece on coordinate!\nTry again!");
             move(color);
             return;
         }
         if (board[firstX][firstY] instanceof Pawn){
-            if (!((Pawn) board[firstX][firstY]).checkIfValidMove(secondX,secondY)){
+            if (!((Pawn) board[firstX][firstY]).checkIfValidMove(secondX,secondY) && !board[firstX][firstY].checkIfValidMovetoTake(secondX,secondY)){
                 System.out.println("Either no piece in given coordinate or piece can't move there!\nTry again");
                 move(color);
                 return;
