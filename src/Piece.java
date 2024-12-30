@@ -3,12 +3,14 @@ public abstract class Piece {
     protected final char name;
     protected int xCoordinate; // indexValues(0-7) not (1-8)
     protected int yCoordinate;
+    protected boolean moved;
 
     protected Piece(boolean color,char name,int xC,int yC){
         this.color = color;
         this.name = name;
         xCoordinate = xC;
         yCoordinate = yC;
+        moved = false;
     }
     public abstract boolean checkIfValidMovetoTake(int xTo,int yTo);
     public boolean validCoordinates(int xFrom,int yFrom,int xTo,int yTo){

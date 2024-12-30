@@ -6,6 +6,7 @@ public class Bishop extends Piece{
 
     @Override
     public boolean checkIfValidMovetoTake(int xTo, int yTo) {
+        if (xCoordinate == xTo) return false;
         if (validCoordinates(xCoordinate,yCoordinate,xTo,yTo)) return Math.abs((yCoordinate - yTo)/(xCoordinate - xTo)) == 1;
         return false;
     }
