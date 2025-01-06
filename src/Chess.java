@@ -60,7 +60,11 @@ public class Chess {
             updatePiecesList();
             boolean whoTurn = zug % 2 != 0;
             System.out.println((whoTurn ? White_To_Move : Black_To_Move));
-            printBoard();
+            if (whoTurn) {
+                printBoardWhite();
+            } else {
+                printBoardBlack();
+            }
             move(whoTurn);
             zug++; // so move changes
         }
@@ -71,7 +75,7 @@ public class Chess {
     public boolean inBounds(int x,int y){
         return x >= 0 && x < 8 && y >= 0 && y < 8;
     }
-    public void printBoard(){
+    public void printBoardWhite(){
         int i = 8;
         for (Piece[] pieces : board){
             System.out.print(i);
@@ -83,6 +87,17 @@ public class Chess {
             i--;
         }
         System.out.println("    a   b   c   d   e   f   g   h");
+    }
+    public void printBoardBlack(){
+        for(int i = board.length - 1; i >= 0; i--){
+            System.out.print(8 - i);
+            for (int j = board.length - 1; j >= 0; j--){
+                if (board[i][j] != null) System.out.print("   " + board[i][j].name);
+                else System.out.print("   " + EMPTY);
+            }
+            System.out.println();
+        }
+        System.out.println("    h   g   f   e   d   c   b   a");
     }
     public void move(boolean color){
         System.out.println("Please type in your Move: " + "            (e.g. e2e4 to move piece form e2 to e4, to castle enter castlelong or castleshort)");
@@ -160,7 +175,7 @@ public class Chess {
         }
         //checks if piece is yours or if goal-square is occupied by your piece
         if ((board[firstX][firstY] ==  null || board[firstX][firstY].color != color) || (board[secondX][secondY] != null && board[secondX][secondY].color == color)){
-            System.out.println("Not your piece or no piece on coordinate!\nTry again!");
+            System.out.println("Not your piece or no piece on coordinate or can't take own piece!\nTry again!");
             move(color);
             return;
         }

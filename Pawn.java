@@ -3,7 +3,7 @@ public class Pawn extends Piece{
     protected Pawn(boolean color, int xC, int yC) {
         super(color, 'P', xC, yC);
     }
-
+    ///class needs to methods because pawns move and taking differ
     @Override
     public boolean checkIfValidMovetoTake(int xTo, int yTo) {
         boolean isXToCoordinateBigger = (xTo - xCoordinate > 0);
