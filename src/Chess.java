@@ -1,11 +1,20 @@
 import java.util.*;
 
 public class Chess {
+    //todo!!
+    /*
+    * promotion
+    * En passant
+    * 50 move rule
+    * notation
+    * better input-system
+    * visuals
+    * */
     private final static boolean Black_Color = false;
     private final static boolean White_Color = true;
     private final static String White_To_Move = "White to move: ";
     private final static String Black_To_Move = "Black to move: ";
-    /**private final static String Black_Rook = " ♖";      //Later for visualisation
+    /**private final static String Black_Rook = " ♖";      //Later for visualisation myb
     private final static String Black_Knight = " ♘";
     private final static String Black_Bishop = " ♗";
     private final static String Black_Queen = " ♕";
@@ -19,15 +28,18 @@ public class Chess {
     private final static String White_Pawn = " ♟";
     private final static String Empty = " □";**/
     private final static char EMPTY = 'X';
+    private final static int asciiVal_a = 97;
     private Piece[][] board = new Piece[8][8];
     private ArrayList<Piece> currentPieces = new ArrayList<>();
     private int zug;
     Scanner scanner = new Scanner(System.in);
-///    private ArrayList<String>[] notation = new ArrayList[2]; do later
+    private ArrayList<String>[] notation = new ArrayList[2];
 
     public Chess() {
         zug = 1;
         assemble(board);
+        notation[0] = new ArrayList<>();
+        notation[1] = new ArrayList<>();
     }
     private static void assemble(Piece[][] b){ //Starting board
         for (int i = 0; i < b.length;i++){
@@ -69,24 +81,81 @@ public class Chess {
             zug++; // so move changes
         }
         System.out.println("Game over!!!");
-        if (mate(White_Color)) System.out.println("Black won congratulation");
-        else System.out.println("White won congratulation");
+        if (mate(White_Color)) {
+            System.out.println("Black won congratulation");
+            for(int i = board.length - 1; i >= 0; i--){
+                System.out.print(8 - i);
+                for (int j = board.length - 1; j >= 0; j--){
+                    if (board[i][j] != null) System.out.print("   " + board[i][j].name);
+                    else System.out.print("   " + EMPTY);
+                }
+                System.out.println();
+            }
+            System.out.println("    h   g   f   e   d   c   b   a");
+            System.out.println("White:  Black:");
+            for (int i = 0; i < notation[0].size(); i++){
+                System.out.println(notation[0].get(i) + "\t" + notation[1].get(i) + (i == notation[0].size() - 1 ? "#" : ""));
+            }
+        }
+        else {
+            System.out.println("White won congratulation");
+            for (int j = 0; j < board.length; j++){
+                System.out.print(8 - j);
+                for (int k = 0; k < board.length; k++){
+                    if (board[j][k] != null) System.out.print("   " + board[j][k].name);
+                    else System.out.print("   " + EMPTY);
+                }
+                System.out.println();
+            }
+            System.out.println("    a   b   c   d   e   f   g   h");
+            System.out.println("White:  Black:");
+            for (int i = 0; i < notation[0].size(); i++){
+                if (i == notation[0].size() - 1) {
+                    System.out.println(notation[0].get(i) + "#"); // # indicates end of match
+                    break;
+                }
+                System.out.println(notation[0].get(i) + "\t" + notation[1].get(i));
+            }
+        }
     }
     public boolean inBounds(int x,int y){
         return x >= 0 && x < 8 && y >= 0 && y < 8;
     }
     public void printBoardWhite(){
-        int i = 8;
-        for (Piece[] pieces : board){
-            System.out.print(i);
-            for (Piece piece : pieces){
-                if (piece != null) System.out.print("   " + piece.name);
+        for (int j = 0; j < board.length; j++){
+            System.out.print(8 - j);
+            for (int k = 0; k < board.length; k++){
+                if (board[j][k] != null) System.out.print("   " + board[j][k].name);
                 else System.out.print("   " + EMPTY);
             }
-            System.out.println();
-            i--;
+            System.out.print("\t\t");
+            printNotations(j);
         }
         System.out.println("    a   b   c   d   e   f   g   h");
+    }
+    private void printNotations(int i){
+        if (zug == 1) { // else NullPointException no notations
+            System.out.println();
+            return;
+        }
+        int j = notation[0].size() - 8;
+        // notations[0] always the bigger one
+        if (j <= 0 && i < notation[0].size()){
+            System.out.print(notation[0].get(i));
+            if (i >= notation[1].size()) { // because black is one move "behind"
+                System.out.println();
+                return;
+            }
+            System.out.print(" " + notation[1].get(i));
+        }else if (j > 0){
+            System.out.print(notation[0].get(i + j));
+            if ((i + j) >= notation[1].size()){
+                System.out.println();
+                return;
+            }
+            System.out.print(" " + notation[1].get(i + j));
+        }
+        System.out.println();
     }
     public void printBoardBlack(){
         for(int i = board.length - 1; i >= 0; i--){
@@ -95,7 +164,8 @@ public class Chess {
                 if (board[i][j] != null) System.out.print("   " + board[i][j].name);
                 else System.out.print("   " + EMPTY);
             }
-            System.out.println();
+            System.out.print("\t\t");
+            printNotations(7 - i);
         }
         System.out.println("    h   g   f   e   d   c   b   a");
     }
@@ -104,6 +174,7 @@ public class Chess {
         String input = scanner.next().toLowerCase();
         if (input.equals("castlelong") && castleAllowed(color,false)){
             if (color){
+                notation[0].add("O-O-O");
                 board[7][2] = board[7][4];
                 board[7][2].moved = true;
                 board[7][4] = null;
@@ -115,6 +186,7 @@ public class Chess {
                 board[7][3].xCoordinate = 7;
                 board[7][3].yCoordinate = 3;
             }else {
+                notation[1].add("O-O-O");
                 board[0][2] = board[0][4];
                 board[0][2].moved = true;
                 board[0][4] = null;
@@ -130,6 +202,7 @@ public class Chess {
         }
         if (input.equals("castleshort") && castleAllowed(color,true)){
             if (color){
+                notation[0].add("O-O");
                 board[7][6] = board[7][4];
                 board[7][6].moved = true;
                 board[7][4] = null;
@@ -141,6 +214,7 @@ public class Chess {
                 board[7][5].yCoordinate = 5;
                 board[7][7] = null;
             }else{
+                notation[1].add("O-O");
                 board[0][6] = board[0][4];
                 board[0][6].moved = true;
                 board[0][4] = null;
@@ -192,6 +266,7 @@ public class Chess {
             move(color);
             return;
         }
+        addNotation(board[firstX][firstY],secondX,secondY,s4,color);
         board[firstX][firstY].moved = true;
         board[secondX][secondY] = board[firstX][firstY];
         board[firstX][firstY] = null;
@@ -201,6 +276,28 @@ public class Chess {
             System.out.println("Enter piece name to what you what to promote to:             (N for Knight,B for Bishop,Q for Queen,R for Rook");
             promote(secondX,secondY);
         }
+    }
+    private void addNotation(Piece p1,int xGoal,int yGoal,String stringFromXGoal,boolean color){
+        int turnNumber = (zug%2 == 0 ? zug/2:zug/2 +1);
+        String res;
+        if (board[xGoal][yGoal] == null){
+            res = turnNumber + "." + notationHelper(p1) + (char) (yGoal + asciiVal_a);
+        }else {
+            res = turnNumber + "." + notationHelper(p1) + "x" + (char) (yGoal + asciiVal_a);
+        }
+        if (color){
+            notation[0].add(res + (stringFromXGoal));
+        }else{
+            notation[1].add(res + (stringFromXGoal));
+        }
+    }
+    private String notationHelper(Piece piece){
+        if (piece instanceof Bishop) return "B";
+        if (piece instanceof Rook) return "R";
+        if (piece instanceof Knight) return "N";
+        if (piece instanceof Queen) return "Q";
+        if (piece instanceof King) return "K";
+        return "";
     }
     private void promote(int x,int y){ ///moved = true is unnecessary because of how castle is implemented
         String promote = scanner.next();
