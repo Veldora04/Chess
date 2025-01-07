@@ -3,10 +3,9 @@ import java.util.*;
 public class Chess {
     //todo!!
     /*
-    * promotion
+    * stalemate
     * En passant
     * 50 move rule
-    * notation
     * better input-system
     * visuals
     * */
@@ -68,9 +67,14 @@ public class Chess {
         b[7][4] = new King(White_Color,7,4);
     }
     public void play(){
+        updatePiecesList();
         while(!isGameOver()) {
-            updatePiecesList();
             boolean whoTurn = zug % 2 != 0;
+            if (isStalemate(whoTurn)){
+                System.out.println("Stalemate by " + !whoTurn);
+                endPrint(whoTurn);
+                return;
+            }
             System.out.println((whoTurn ? White_To_Move : Black_To_Move));
             if (whoTurn) {
                 printBoardWhite();
@@ -78,27 +82,21 @@ public class Chess {
                 printBoardBlack();
             }
             move(whoTurn);
+            updatePiecesList();
             zug++; // so move changes
         }
         System.out.println("Game over!!!");
         if (mate(White_Color)) {
             System.out.println("Black won congratulation");
-            for(int i = board.length - 1; i >= 0; i--){
-                System.out.print(8 - i);
-                for (int j = board.length - 1; j >= 0; j--){
-                    if (board[i][j] != null) System.out.print("   " + board[i][j].name);
-                    else System.out.print("   " + EMPTY);
-                }
-                System.out.println();
-            }
-            System.out.println("    h   g   f   e   d   c   b   a");
-            System.out.println("White:  Black:");
-            for (int i = 0; i < notation[0].size(); i++){
-                System.out.println(notation[0].get(i) + "\t" + notation[1].get(i) + (i == notation[0].size() - 1 ? "#" : ""));
-            }
+            endPrint(false);
         }
         else {
             System.out.println("White won congratulation");
+            endPrint(true);
+        }
+    }
+    private void endPrint(boolean color){
+        if (color) {
             for (int j = 0; j < board.length; j++){
                 System.out.print(8 - j);
                 for (int k = 0; k < board.length; k++){
@@ -116,7 +114,55 @@ public class Chess {
                 }
                 System.out.println(notation[0].get(i) + "\t" + notation[1].get(i));
             }
+        }else {
+            for(int i = board.length - 1; i >= 0; i--){
+                System.out.print(8 - i);
+                for (int j = board.length - 1; j >= 0; j--){
+                    if (board[i][j] != null) System.out.print("   " + board[i][j].name);
+                    else System.out.print("   " + EMPTY);
+                }
+                System.out.println();
+            }
+            System.out.println("    h   g   f   e   d   c   b   a");
+            System.out.println("White:  Black:");
+            for (int i = 0; i < notation[0].size(); i++){
+                System.out.println(notation[0].get(i) + "\t" + notation[1].get(i) + (i == notation[0].size() - 1 ? "#" : ""));
+            }
         }
+    }
+    private boolean isStalemate(boolean color){
+        if (isKingInCheck(color) || canKingMove(color)) return false;
+        for (Piece piece : currentPieces){
+            // checks if any movement is possible
+            if (piece instanceof Rook || piece instanceof Queen){
+                if ((inBounds(piece.xCoordinate-1, piece.yCoordinate) && (board[piece.xCoordinate-1][piece.yCoordinate]==null || board[piece.xCoordinate-1][piece.yCoordinate].color != color))) return false;
+                if ((inBounds(piece.xCoordinate+1, piece.yCoordinate) && (board[piece.xCoordinate+1][piece.yCoordinate]==null || board[piece.xCoordinate+1][piece.yCoordinate].color != color))) return false;
+                if ((inBounds(piece.xCoordinate, piece.yCoordinate-1) && (board[piece.xCoordinate][piece.yCoordinate-1]==null || board[piece.xCoordinate][piece.yCoordinate-1].color != color))) return false;
+                if ((inBounds(piece.xCoordinate, piece.yCoordinate+1) && (board[piece.xCoordinate][piece.yCoordinate+1]==null || board[piece.xCoordinate][piece.yCoordinate+1].color != color))) return false;
+            }
+            if (piece instanceof Bishop || piece instanceof Queen){
+                if ((inBounds(piece.xCoordinate-1, piece.yCoordinate-1) && (board[piece.xCoordinate-1][piece.yCoordinate-1]==null || board[piece.xCoordinate-1][piece.yCoordinate-1].color != color))) return false;
+                if ((inBounds(piece.xCoordinate+1, piece.yCoordinate+1) && (board[piece.xCoordinate+1][piece.yCoordinate+1]==null || board[piece.xCoordinate+1][piece.yCoordinate+1].color != color))) return false;
+                if ((inBounds(piece.xCoordinate+1, piece.yCoordinate-1) && (board[piece.xCoordinate+1][piece.yCoordinate-1]==null || board[piece.xCoordinate+1][piece.yCoordinate-1].color != color))) return false;
+                if ((inBounds(piece.xCoordinate-1, piece.yCoordinate+1) && (board[piece.xCoordinate-1][piece.yCoordinate+1]==null || board[piece.xCoordinate-1][piece.yCoordinate+1].color != color))) return false;
+            }
+            if (piece instanceof Pawn) { /// different for black and white
+                if (inBounds(piece.xCoordinate + (color ? 1 : (-1)), piece.yCoordinate) && board[piece.xCoordinate + (color ? 1 : (-1))][piece.yCoordinate] == null) return false;
+                if (inBounds(piece.xCoordinate + (color ? 1 : (-1)), piece.yCoordinate + 1) && board[piece.xCoordinate + (color ? 1 : (-1))][piece.yCoordinate + 1] != null && board[piece.xCoordinate + (color ? 1 : (-1))][piece.yCoordinate + 1].color != color) return false;
+                if (inBounds(piece.xCoordinate + (color ? 1 : (-1)), piece.yCoordinate - 1) && board[piece.xCoordinate + (color ? 1 : (-1))][piece.yCoordinate - 1] != null && board[piece.xCoordinate + (color ? 1 : (-1))][piece.yCoordinate - 1].color != color) return false;
+            }
+            if (piece instanceof Knight) {
+                if ((inBounds(piece.xCoordinate+2, piece.yCoordinate+1) && (board[piece.xCoordinate+2][piece.yCoordinate+1]==null || board[piece.xCoordinate+2][piece.yCoordinate+1].color != color))) return false;
+                if ((inBounds(piece.xCoordinate+2, piece.yCoordinate-1) && (board[piece.xCoordinate+2][piece.yCoordinate-1]==null || board[piece.xCoordinate+2][piece.yCoordinate-1].color != color))) return false;
+                if ((inBounds(piece.xCoordinate+1, piece.yCoordinate+2) && (board[piece.xCoordinate+1][piece.yCoordinate+2]==null || board[piece.xCoordinate+1][piece.yCoordinate+2].color != color))) return false;
+                if ((inBounds(piece.xCoordinate+1, piece.yCoordinate-2) && (board[piece.xCoordinate+1][piece.yCoordinate-2]==null || board[piece.xCoordinate+1][piece.yCoordinate-2].color != color))) return false;
+                if ((inBounds(piece.xCoordinate-2, piece.yCoordinate+1) && (board[piece.xCoordinate-2][piece.yCoordinate+1]==null || board[piece.xCoordinate-2][piece.yCoordinate+1].color != color))) return false;
+                if ((inBounds(piece.xCoordinate-2, piece.yCoordinate-1) && (board[piece.xCoordinate-2][piece.yCoordinate-1]==null || board[piece.xCoordinate-2][piece.yCoordinate-1].color != color))) return false;
+                if ((inBounds(piece.xCoordinate-1, piece.yCoordinate+2) && (board[piece.xCoordinate-1][piece.yCoordinate+2]==null || board[piece.xCoordinate-1][piece.yCoordinate+2].color != color))) return false;
+                if ((inBounds(piece.xCoordinate-1, piece.yCoordinate-2) && (board[piece.xCoordinate-1][piece.yCoordinate-2]==null || board[piece.xCoordinate-1][piece.yCoordinate-2].color != color))) return false;
+            }
+        }
+        return true;
     }
     public boolean inBounds(int x,int y){
         return x >= 0 && x < 8 && y >= 0 && y < 8;
@@ -172,9 +218,11 @@ public class Chess {
     public void move(boolean color){
         System.out.println("Please type in your Move: " + "            (e.g. e2e4 to move piece form e2 to e4, to castle enter castlelong or castleshort)");
         String input = scanner.next().toLowerCase();
+        int turnNumber = (zug%2 == 0 ? zug/2:zug/2 +1);
         if (input.equals("castlelong") && castleAllowed(color,false)){
+            String temp = turnNumber + "O-O-O";
             if (color){
-                notation[0].add("O-O-O");
+                notation[0].add(temp);
                 board[7][2] = board[7][4];
                 board[7][2].moved = true;
                 board[7][4] = null;
@@ -186,7 +234,7 @@ public class Chess {
                 board[7][3].xCoordinate = 7;
                 board[7][3].yCoordinate = 3;
             }else {
-                notation[1].add("O-O-O");
+                notation[1].add(temp);
                 board[0][2] = board[0][4];
                 board[0][2].moved = true;
                 board[0][4] = null;
@@ -201,8 +249,9 @@ public class Chess {
             return;
         }
         if (input.equals("castleshort") && castleAllowed(color,true)){
+            String temp = turnNumber + "O-O";
             if (color){
-                notation[0].add("O-O");
+                notation[0].add(temp);
                 board[7][6] = board[7][4];
                 board[7][6].moved = true;
                 board[7][4] = null;
@@ -214,7 +263,7 @@ public class Chess {
                 board[7][5].yCoordinate = 5;
                 board[7][7] = null;
             }else{
-                notation[1].add("O-O");
+                notation[1].add(temp);
                 board[0][6] = board[0][4];
                 board[0][6].moved = true;
                 board[0][4] = null;
@@ -266,24 +315,32 @@ public class Chess {
             move(color);
             return;
         }
-        addNotation(board[firstX][firstY],secondX,secondY,s4,color);
-        board[firstX][firstY].moved = true;
+        Piece temp = board[secondX][secondY];
         board[secondX][secondY] = board[firstX][firstY];
         board[firstX][firstY] = null;
+        if (isKingInCheck(color)) { // case if piece was pinned
+            board[firstX][firstY] = board[secondX][secondY];
+            board[secondX][secondY] = temp;
+            System.out.println("Can't move this piece!\nTry again!");
+            move(color);
+            return;
+        }
+        board[secondX][secondY].moved = true;
         board[secondX][secondY].xCoordinate = secondX;
         board[secondX][secondY].yCoordinate = secondY;
+        addNotation(board[secondX][secondY],(temp != null),s4,color);
         if (board[secondX][secondY] instanceof Pawn && (secondX == 7 || secondX == 0)){
             System.out.println("Enter piece name to what you what to promote to:             (N for Knight,B for Bishop,Q for Queen,R for Rook");
             promote(secondX,secondY);
         }
     }
-    private void addNotation(Piece p1,int xGoal,int yGoal,String stringFromXGoal,boolean color){
+    private void addNotation(Piece p1,boolean wasPieceTaken,String stringFromXGoal,boolean color){
         int turnNumber = (zug%2 == 0 ? zug/2:zug/2 +1);
         String res;
-        if (board[xGoal][yGoal] == null){
-            res = turnNumber + "." + notationHelper(p1) + (char) (yGoal + asciiVal_a);
+        if (!wasPieceTaken){
+            res = turnNumber + "." + notationHelper(p1) + (char) (p1.yCoordinate + asciiVal_a);
         }else {
-            res = turnNumber + "." + notationHelper(p1) + "x" + (char) (yGoal + asciiVal_a);
+            res = turnNumber + "." + notationHelper(p1) + "x" + (char) (p1.yCoordinate + asciiVal_a);
         }
         if (color){
             notation[0].add(res + (stringFromXGoal));
@@ -408,13 +465,15 @@ public class Chess {
         return res != 0;
     }
     private int checkRows(int x,int y,Piece piece){
+        if (!(piece.xCoordinate == x || piece.yCoordinate == y)) return 0; // edge case because of queen
         for (Piece p : currentPieces){
-            if (x == piece.xCoordinate && x == p.xCoordinate && numberIsBetweenNumbers(p.yCoordinate,y,piece.yCoordinate)) return 1;
-            if (y == piece.yCoordinate && y == p.yCoordinate && numberIsBetweenNumbers(p.xCoordinate,x,piece.xCoordinate)) return 1;
+            if (x == piece.xCoordinate && x == p.xCoordinate && numberIsBetweenNumbers(p.yCoordinate,y,piece.yCoordinate)) return 0;
+            if (y == piece.yCoordinate && y == p.yCoordinate && numberIsBetweenNumbers(p.xCoordinate,x,piece.xCoordinate)) return 0;
         }
-        return 0;
+        return 1;
     }
     private int checkDiagonals(int x,int y,Piece piece){
+        if ((piece.xCoordinate == x || piece.yCoordinate == y)) return 0; // edge case because of queen
         int dx = piece.xCoordinate > x ? 1 : -1; //Direction along x
         int dy = piece.yCoordinate > y ? 1 : -1; //Direction along y
 
